@@ -1,0 +1,52 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+## COMMON #################################################################
+
+# hidden files
+.*
+
+# Common temp files
+\#*
+.\#*
+*~
+.*~
+
+# Common backup files
+*.bak*
+
+# Common log files
+*.log*
+
+
+## APP/OS SPECIFICS #######################################################
+
+# OS Specific files
+.DS_Store
+
+# IDE Specific
+.idea
+
+
+## BUILD ##################################################################
+
+# production
+build
+dist
+
+# NPM / Yarn dependencies
+node_modules
+
+# NPM / Yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+## TESTING ################################################################
+
+# playwright
+test-results/
+playwright-report/
+
+# testing
+coverage
