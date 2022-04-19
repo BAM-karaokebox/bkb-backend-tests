@@ -1,0 +1,27 @@
+{
+  "name": "website-backend-tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "tslint -p tsconfig.json -c tslint.json",
+    "lint-fix": "tslint -p tsconfig.json -c tslint.json --fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.19.2",
+    "husky": "^4.2.5",
+    "tslint": "^5.20.0",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint"
+    }
+  }
+}
