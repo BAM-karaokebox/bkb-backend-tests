@@ -26,4 +26,13 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
-
+    - name: Report Status
+      if: always()
+      uses: tomas/notify-slack-action@v1
+      with:
+        status: ${{ job.status  }}
+        notify_when: 'failure'
+        notification_title: '{workflow} has {status_message}'
+        message_format: '{status_message} in <{repo_url|{repo}}>'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_URL  }}
