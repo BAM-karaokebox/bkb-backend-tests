@@ -29,13 +29,6 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
-    - name: Create a file
-      run: echo ${{ matrix.node-version }} > my_file.txt
-    - name: Accidentally upload to the same artifact via multiple jobs
-      uses: actions/upload-artifact@v3
-      with:
-          name: my-artifact
-          path: ${{ github.workspace }}
     - name: Report Status
       if: always()
       uses: ravsamhq/notify-slack-action@v1
@@ -43,6 +36,6 @@ jobs:
         status: ${{ job.status  }}
         notify_when: 'failure'
         notification_title: '{workflow} has {status_message}'
-        message_format: '{status_message} in <{repo_url}|{repo}> : <{run_url}|check report>  ${{ github.workspace }}'
+        message_format: '{status_message} in <{repo_url}|{repo}> : <{run_url}|check report>'
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_URL  }}
