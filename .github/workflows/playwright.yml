@@ -32,8 +32,8 @@ jobs:
     - uses: actions/download-artifact@v3
       id: download
       with:
-        name: 'my-artifact'
-        path: path/to/artifacts
+        name: playwright-report
+        path: playwright-report/
     - name: 'Echo download path'
       run: echo ${{steps.download.outputs.download-path}}
     - name: Report Status
@@ -43,6 +43,6 @@ jobs:
         status: ${{ job.status  }}
         notify_when: 'failure'
         notification_title: '{workflow} has {status_message}'
-        message_format: '{status_message} in <{repo_url}|{repo}> : <{run_url}|check report>  {{steps.download.outputs.download-path}}'
+        message_format: '{status_message} in <{repo_url}|{repo}> : <{run_url}|check report>  ${{steps.download.outputs.download-path}}'
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_URL  }}
