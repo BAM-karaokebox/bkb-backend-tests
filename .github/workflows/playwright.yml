@@ -1,5 +1,8 @@
 name: Playwright Tests
 on:
+  push:
+    branches:
+      - BAM-986-test-as-a-backend-user-i-get-a-notification-as-soon-as-a-price-is-wrong
   schedule:
     - cron : '0 */3 * * *'
 jobs:
@@ -33,6 +36,6 @@ jobs:
         status: ${{ job.status  }}
         notify_when: 'failure'
         notification_title: '{workflow} has {status_message}'
-        message_format: '{status_message} in <{repo_url}|{repo}}>'
+        message_format: '{status_message} in <{repo_url}|{repo}|{suites}>'
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_URL  }}
