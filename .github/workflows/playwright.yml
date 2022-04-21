@@ -20,7 +20,7 @@ jobs:
       run: npx playwright install --with-deps
     - name: Run Playwright tests
       run: npx playwright test
-      env:
+      env:  
         AUTH_USER_BACK: ${{ secrets.AUTH_USER_BACK }}
         AUTH_PASS_BACK: ${{ secrets.AUTH_PASS_BACK }}
     - uses: actions/upload-artifact@v2
@@ -36,6 +36,6 @@ jobs:
         status: ${{ job.status  }}
         notify_when: 'failure'
         notification_title: '{workflow} has {status_message}'
-        message_format: '{status_message} in <{repo_url}|{repo}> : <{repo}/actions/artifacts/{artifact_id}/{archive_format}>'
+        message_format: '{status_message} in <{repo_url}|{repo}> : <{playwright-report/}}>'
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_URL  }}
