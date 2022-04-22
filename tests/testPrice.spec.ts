@@ -93,22 +93,18 @@ const checkPrice = async (page: any, venuePath: any) => {
     }
     return (ListeTime);
     });
-  console.log(HourSlot);
 
   // Create a list compose of hours of each available slot
   await getdata(page, 0);
   Creneau = listdata;
-  console.log(Creneau);
 
   // Create a list compose of price of each available slot
   await getdata(page, 2);
   PrixSalle = listdata;
-  console.log(PrixSalle);
 
   // Create a list compose of price per person of each available slot
   await getdata(page, 4);
   PrixPerson = listdata;
-  console.log(PrixPerson);
 
   // Verify the price by person between 14 hours and 3 hours then it create the list Erreur
   for (let i = 0; i < PrixPerson.length; i++) {
