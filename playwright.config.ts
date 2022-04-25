@@ -4,7 +4,6 @@ import { devices } from '@playwright/test';
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
-/*
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
@@ -30,7 +29,7 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. */
     actionTimeout: 6000,
 
-    /* Collect trace when retrying the failed test. Check at the end of the report */
+    /* Collect trace when a test fail. Check at the end of the report */
     trace: 'retain-on-failure',
   },
 
