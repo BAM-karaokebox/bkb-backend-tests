@@ -120,7 +120,7 @@ const checkPrice = async (page: any, venuePath: any) => {
 };
 
 const checkPriceforeachVenues = async (page: any, venuePath: any) => {
-    { test.setTimeout(180000); }
+    { test.setTimeout(210000); }
 
     await page.locator('select[name="calendar_place"]').selectOption(JSON.stringify(venuePath.id));
     await page.waitForSelector('.booking .calendar .screen');
@@ -131,7 +131,7 @@ const checkPriceforeachVenues = async (page: any, venuePath: any) => {
 
       // dedicated to site where there only one page of reservation
       if (await page.isHidden('.btn-prev-room', {strict: true}) && await page.isHidden('.btn-next-room', {strict: true})) {
-        checkPrice(page, venuePath);
+        await checkPrice(page, venuePath);
         await page.click('.col-md-5 .btn-next');
       }
 
@@ -139,7 +139,7 @@ const checkPriceforeachVenues = async (page: any, venuePath: any) => {
       if (await page.isVisible('.btn-next-room', {strict: true})) {
         while (await page.isVisible('.btn-next-room', {strict: true})) {
 
-          checkPrice(page, venuePath);
+          await checkPrice(page, venuePath);
 
           await page.click('.btn-next-room');
           await page.waitForSelector('.booking .calendar .screen');
@@ -149,7 +149,7 @@ const checkPriceforeachVenues = async (page: any, venuePath: any) => {
       // browse reservation page from the right to the left and change the day
       if (await page.isVisible('.btn-prev-room', {strict: true})) {
 
-        checkPrice(page, venuePath);
+        await checkPrice(page, venuePath);
 
         await page.click('.col-md-5 .btn-next');
         await page.waitForSelector('.btn-prev-room');
