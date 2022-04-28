@@ -27,7 +27,7 @@ const config: PlaywrightTestConfig = {
   /* Shared settings for all the projects below. */
   use: {
     /* Maximum time each action such as `click()` can take. */
-    actionTimeout: 6000,
+    actionTimeout: 7000,
 
     /* Collect trace when a test fail. Check at the end of the report */
     trace: 'retain-on-failure',
