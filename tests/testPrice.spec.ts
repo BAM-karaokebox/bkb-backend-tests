@@ -8,15 +8,15 @@ const BASE_URL = 'https://backend.bam-karaokebox.com/index.php/login_backend?utm
 const VENUES = [{
   name: 'Richer',
   id: 2,
-  floorPrice: 5,
+  floorPrice: 4.5,
 }, {
   name: 'Sentier',
   id: 3,
-  floorPrice: 5,
+  floorPrice: 4.5,
 }, {
   name: 'Parmentier',
   id: 4,
-  floorPrice: 5,
+  floorPrice: 4.5,
 }, {
   name: 'Chartrons',
   id: 5,
@@ -28,12 +28,11 @@ const VENUES = [{
 }, {
   name: 'Madeleine',
   id: 7,
-  floorPrice: 5,
-},
-{
+  floorPrice: 4.5,
+}, {
   name: 'Etoile',
   id: 8,
-  floorPrice: 5,
+  floorPrice: 4.5,
 }];
 
 let listdata: any = [];
