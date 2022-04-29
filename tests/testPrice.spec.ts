@@ -8,15 +8,15 @@ const BASE_URL = 'https://backend.bam-karaokebox.com/index.php/login_backend?utm
 const VENUES = [{
   name: 'Richer',
   id: 2,
-  floorPrice: 5,
+  floorPrice: 4.5,
 }, {
   name: 'Sentier',
   id: 3,
-  floorPrice: 5,
+  floorPrice: 4.5,
 }, {
   name: 'Parmentier',
   id: 4,
-  floorPrice: 5,
+  floorPrice: 4.5,
 }, {
   name: 'Chartrons',
   id: 5,
@@ -28,100 +28,88 @@ const VENUES = [{
 }, {
   name: 'Madeleine',
   id: 7,
-  floorPrice: 5,
-},
-{
+  floorPrice: 4.5,
+}, {
   name: 'Etoile',
   id: 8,
-  floorPrice: 5,
+  floorPrice: 4.5,
 }];
 
-let listdata: any = [];
-const Erreur: any = [];
-let Creneau: string[];
-let PrixSalle: string[];
-let PrixPerson: string[];
+const Errors: any = [];
 
 const getdata = async (page: any, value: number) => {
-  const getCreneau = await page.evaluate((data: number = value) => {
-    const ListeSeance = [];
-    const NumberSlot = document.querySelectorAll('div.slot.available').length;
-    for (let i = 0; i < NumberSlot; i++) {
-      ListeSeance.push(document.querySelectorAll('div.slot.available')[i].childNodes[data].nodeValue);
-    }
-    return (ListeSeance);
-    }, value);
-  return (listdata = getCreneau);
+  return await page.evaluate((data: number = value) => {
+    return Array
+      .from(document.querySelectorAll('div.slot.available'))
+      .map(slot => (slot.childNodes[data].nodeValue || '').trim());
+  }, value);
 };
 
 const checkPrice = async (page: any, venuePath: any) => {
-
   await page.waitForSelector('.booking .calendar .screen');
 
   // Create a list compose of the "name" of room and date of each available slot
-  const RoomSlot = await page.evaluate(() => {
-    const ListeSalle = [];
-    const NumberRoom = document.querySelectorAll('.screen').length;
+  const roomSlots = await page.evaluate(() => {
+    const rooms = [];
+    const roomNumber = document.querySelectorAll('.screen').length;
     let date;
     date = document.querySelectorAll('div.slot input')[0].dataset.bookingDate;
     date = date.substring(6, 10) + '/' + date.substring(0, 2) + '/' + date.substring(3, 5);
-    for (let j = 0; j < NumberRoom; j++) {
-      const RoomName = document.querySelectorAll('div.capacity')[j].childNodes[0].nodeValue;
-      const NumberSlot = document.querySelectorAll('div.places')[j].querySelectorAll('div.available').length;
-      if (NumberSlot !== 0) {
-        for (let i = 0; i < NumberSlot; i++) {
-          ListeSalle.push(RoomName + date);
+    const capacities = document.querySelectorAll('div.capacity');
+    const places = document.querySelectorAll('div.places');
+    for (let j = 0; j < roomNumber; j++) {
+      const roomName = (capacities[j].childNodes[0].nodeValue || '').replace('Salle', '').trim();
+      const numberSlot = places[j].querySelectorAll('div.available').length;
+      if (numberSlot !== 0) {
+        for (let i = 0; i < numberSlot; i++) {
+          rooms.push(`${roomName} (${date})`);
         }
       }
     }
-    return ListeSalle;
+    return rooms;
   });
 
   // Create a list compose of slot duration
-  const HourSlot = await page.evaluate(() => {
-    const ListeTime = [];
-    const NumberSlot = document.querySelectorAll('div.slot.available').length;
-    for (let i = 0; i < NumberSlot; i++) {
-      let StartHours = document.querySelectorAll('div.available input')[i].dataset.bookingFrom;
-      let EndHours = document.querySelectorAll('div.available input')[i].dataset.bookingTo;
-      StartHours = parseInt(StartHours[0] + StartHours[1] + StartHours[3] + StartHours[4] , 10);
-      EndHours = parseInt(EndHours[0] + EndHours[1] + EndHours[3] + EndHours[4] , 10);
-      if (EndHours < 1000 && parseInt(StartHours, 10) > 1400) {
-        EndHours = EndHours + 2400;
+  const sessions = await page.evaluate(() => {
+    const sessionsList = [];
+    const slotCounts = document.querySelectorAll('div.slot.available').length;
+    const available = document.querySelectorAll('div.available input');
+    for (let i = 0; i < slotCounts; i++) {
+      const startTime = available[i].dataset.bookingFrom;
+      const endTime = available[i].dataset.bookingTo;
+      const startTimeInt = parseInt(startTime[0] + startTime[1] + startTime[3] + startTime[4] , 10);
+      let endTimeInt = parseInt(endTime[0] + endTime[1] + endTime[3] + endTime[4] , 10);
+
+      if (endTimeInt < 1000 && parseInt(startTime, 10) > 1400) {
+        endTimeInt = endTimeInt + 2400;
       }
-      ListeTime.push(JSON.stringify((EndHours - StartHours) / 100));
+      sessionsList.push(JSON.stringify((endTimeInt - startTimeInt) / 100.00));
     }
-    return (ListeTime);
-    });
+    return (sessionsList);
+  });
 
   // Create a list compose of hours of each available slot
-  await getdata(page, 0);
-  Creneau = listdata;
+  const timeSlots = await getdata(page, 0);
 
   // Create a list compose of price of each available slot
-  await getdata(page, 2);
-  PrixSalle = listdata;
+  const roomPrices = await getdata(page, 2);
 
   // Create a list compose of price per person of each available slot
-  await getdata(page, 4);
-  PrixPerson = listdata;
+  const roomPricesPerPerson = await getdata(page, 4);
 
-  // Verify the price by person between 14 hours and 3 hours then it create the list Erreur
-  for (let i = 0; i < PrixPerson.length; i++) {
-    const Result = [RoomSlot, Creneau, PrixSalle, PrixPerson];
-    const pricePerPerson = parseInt(PrixPerson[i], 10);
-    const venueFloorPrice = parseInt(venuePath.floorPrice, 10);
-    const sessionTime = HourSlot[i][0];
-    if (pricePerPerson < venueFloorPrice * sessionTime) {
-      Erreur.push(`\n Error detected at ${venuePath.name} : ${Result[0][i]} ${Result[1][i]} for ${Result[2][i]} and ${Result[3][i]}
-       we expect to have a price superior at ${venueFloorPrice * sessionTime}€ per person \n`);
+  // Verify the price by person between 14 hours and 3 hours then it create the list Errors
+  for (let i = 0; i < roomPricesPerPerson.length; i++) {
+    const pricePerPerson = parseInt(roomPricesPerPerson[i], 10);
+    const sessionTime = sessions[i][0];
+    const expectedPricePerPerson = venuePath.floorPrice * sessionTime;
+
+    if (pricePerPerson < expectedPricePerPerson) {
+      Errors.push(`${venuePath.name} - ${roomSlots[i]} [${timeSlots[i]}] => got: ${pricePerPerson}€ per person / expected: > ${expectedPricePerPerson} per person (total: ${roomPrices[i]})`);
     }
   }
 };
 
 const checkPriceforeachVenues = async (page: any, venuePath: any) => {
-    { test.setTimeout(180000); }
-
     await page.locator('select[name="calendar_place"]').selectOption(JSON.stringify(venuePath.id));
     await page.waitForSelector('.booking .calendar .screen');
 
@@ -131,7 +119,7 @@ const checkPriceforeachVenues = async (page: any, venuePath: any) => {
 
       // dedicated to site where there only one page of reservation
       if (await page.isHidden('.btn-prev-room', {strict: true}) && await page.isHidden('.btn-next-room', {strict: true})) {
-        checkPrice(page, venuePath);
+        await checkPrice(page, venuePath);
         await page.click('.col-md-5 .btn-next');
       }
 
@@ -139,7 +127,7 @@ const checkPriceforeachVenues = async (page: any, venuePath: any) => {
       if (await page.isVisible('.btn-next-room', {strict: true})) {
         while (await page.isVisible('.btn-next-room', {strict: true})) {
 
-          checkPrice(page, venuePath);
+          await checkPrice(page, venuePath);
 
           await page.click('.btn-next-room');
           await page.waitForSelector('.booking .calendar .screen');
@@ -149,7 +137,7 @@ const checkPriceforeachVenues = async (page: any, venuePath: any) => {
       // browse reservation page from the right to the left and change the day
       if (await page.isVisible('.btn-prev-room', {strict: true})) {
 
-        checkPrice(page, venuePath);
+        await checkPrice(page, venuePath);
 
         await page.click('.col-md-5 .btn-next');
         await page.waitForSelector('.btn-prev-room');
@@ -161,10 +149,8 @@ const checkPriceforeachVenues = async (page: any, venuePath: any) => {
         }
       }
     }
-    if (Erreur.length !== 0) {
-      throw new Error(
-        Erreur,
-      );
+    if (Errors.length !== 0) {
+      throw new Error('\n' + Errors.join('\n'));
     }
 };
 
