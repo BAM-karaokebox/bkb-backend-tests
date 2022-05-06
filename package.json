@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "tslint -p tsconfig.json -c tslint.json",
-    "lint-fix": "tslint -p tsconfig.json -c tslint.json --fix",
+    "lint": "eslint . --ext ts,js .",
+    "lint-fix": "eslint --fix . --ext ts,js .",
     "prepare": "husky install"
   },
   "keywords": [],
@@ -13,9 +13,21 @@
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.19.2",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/eslint-plugin-tslint": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
+    "eslint": "^8.14.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-editorconfig": "^3.2.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsdoc": "^39.2.9",
+    "eslint-plugin-playwright": "^0.9.0",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-prettier": "^4.0.0",
     "husky": ">=6",
     "lint-staged": ">=10",
     "prettier": "2.6.2",
+    "prettier-eslint": "^14.0.2",
     "tslint": "^5.20.0",
     "typescript": "^4.6.3"
   },
