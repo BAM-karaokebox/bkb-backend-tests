@@ -12,6 +12,8 @@ interface Venue {
   floorPrice: Float;
 }
 
+const START_DATE = new Date();
+const DAYS = 30;
 const VENUES: Venue[] = [
   {
     name: 'Richer',
@@ -186,12 +188,11 @@ const dateToLocalISOShortDate = (date: Date): string => {
   return localDate.toISOString().substring(0, 10);
 };
 
-VENUES.forEach((venue) => {
-  const today: Date = new Date();
+[...Array(DAYS).keys()].forEach((day) => {
+  const testDay: Date = getFutureDate(START_DATE, day);
 
-  [...Array(30).keys()].forEach((day) => {
-    const testDay: Date = getFutureDate(today, day);
-    test(`${venue.name} (${dateToLocalISOShortDate(testDay)})`, async ({ page }) =>
+  VENUES.forEach((venue) => {
+    test(`${dateToLocalISOShortDate(testDay)} - ${venue.name}`, async ({ page }) =>
       checkPricesForVenue(page, venue, testDay));
   });
 });
