@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: BAM Website Backend Tests
 on:
   workflow_dispatch:
   schedule:
