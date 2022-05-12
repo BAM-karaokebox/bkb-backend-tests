@@ -62,8 +62,6 @@ const getData = async (page: Page, value: number): Promise<string> =>
   );
 
 const checkPrice = async (page: Page, venue: Venue): Promise<string[]> => {
-  await page.waitForSelector('.booking .calendar .screen');
-
   // Create a list compose of the 'name' of room and date of each available slot
   const roomSlots = await page.evaluate(() => {
     /*
@@ -144,13 +142,15 @@ const checkPrice = async (page: Page, venue: Venue): Promise<string[]> => {
 const checkPricesForVenue = async (page: Page, venue: Venue, date: Date) => {
   const errors: string[] = [];
 
-  // select the desired venue and wait for refresh
+  // select the desired venue
   await page.selectOption('#calendar_place', venue.id.toString(10));
   await page.waitForSelector('.booking .calendar .screen');
 
-  // select the desired date and wait for refresh
+  // select the desired date
   await page.locator('#date').evaluate((el) => el.removeAttribute('readonly'));
   await page.fill('#date', `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`);
+
+  // wait for calendar view refresh
   await page.waitForSelector('.booking .calendar .screen');
 
   // dedicated to site where there only one page of reservation
