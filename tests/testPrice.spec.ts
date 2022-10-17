@@ -13,7 +13,7 @@ interface Venue {
 }
 
 const START_DATE = new Date();
-const DAYS = 30;
+const DAYS = 60;
 const VENUES: Venue[] = [
   {
     name: 'Richer',
@@ -106,7 +106,7 @@ const checkPrice = async (page: Page, venue: Venue): Promise<string[]> => {
       const startTimeInt: number = extractTimeAsInt(startTime);
       let endTimeInt: number = extractTimeAsInt(endTime);
 
-      if (endTimeInt < 1000 && parseInt(startTime, 10) > 1400) {
+      if (endTimeInt < 1000 && startTimeInt > 1400) {
         endTimeInt = endTimeInt + 2400;
       }
       sessionsList.push(JSON.stringify((endTimeInt - startTimeInt) / 100.0));
@@ -149,6 +149,7 @@ const checkPricesForVenue = async (page: Page, venue: Venue, date: Date) => {
   // select the desired date
   await page.locator('#date').evaluate((el) => el.removeAttribute('readonly'));
   await page.fill('#date', `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`);
+  await page.keyboard.press('Enter'); 
 
   // wait for calendar view refresh
   await page.waitForSelector('.booking .calendar .screen');
@@ -162,6 +163,7 @@ const checkPricesForVenue = async (page: Page, venue: Venue, date: Date) => {
       errors.push(...(await checkPrice(page, venue)));
       await page.click('.btn-next-room');
       await page.waitForSelector('.booking .calendar .screen');
+      await checkPrice(page, venue)
     }
   }
   if (errors.length !== 0) {
