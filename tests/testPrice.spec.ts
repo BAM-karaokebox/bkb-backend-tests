@@ -13,7 +13,7 @@ interface Venue {
 }
 
 const START_DATE = new Date();
-const DAYS = 30;
+const DAYS = 60;
 const VENUES: Venue[] = [
   {
     name: 'Richer',
