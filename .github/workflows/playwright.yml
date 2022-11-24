@@ -23,7 +23,7 @@ jobs:
         env:
           AUTH_USER_BACK: ${{ secrets.AUTH_USER_BACK }}
           AUTH_PASS_BACK: ${{ secrets.AUTH_PASS_BACK }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: playwright-report
