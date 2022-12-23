@@ -1,4 +1,4 @@
-name: BAM Backoffice Tests
+name: BKB Backoffice Test Suite / Price Checks
 on:
   workflow_dispatch:
   schedule:
@@ -32,9 +32,9 @@ jobs:
         uses: ravsamhq/notify-slack-action@v2
         with:
           status: ${{ job.status  }}
-          repo: ${{ github.repository  }}
           notify_when: 'failure'
-          notification_title: '{status}: {workflow}'
-          message_format: '{emoji} *{status_message}* in { repo } (<{run_url}|report>)'
+          notification_title: '{status_message}: {repo} / {workflow}'
+          message_format: '{emoji} *{status_message}*: { repo } (<{run_url}|report>)'
+          footer: "<{repo_url}|{View Repository}> | <{workflow_url}|View Workflow>"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_URL  }}
