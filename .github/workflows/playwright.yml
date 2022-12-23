@@ -1,10 +1,8 @@
-name: BAM Website Backend Tests
+name: BKB Backoffice Test Suite / Price Checks
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
-    - cron: '0 10 * * *'
-    - cron: '0 14 * * *'
 jobs:
   test:
     timeout-minutes: 120
@@ -31,11 +29,12 @@ jobs:
           retention-days: 30
       - name: Report Status
         if: always()
-        uses: ravsamhq/notify-slack-action@v1
+        uses: ravsamhq/notify-slack-action@v2
         with:
           status: ${{ job.status  }}
           notify_when: 'failure'
-          notification_title: '{workflow} has {status_message}'
-          message_format: 'Test {status_message} in BAM-karaokebox/website-backend-tests: <{run_url}|check report>'
+          notification_title: '{status_message}: {repo} / {workflow}'
+          message_format: '{emoji} *{status_message}*: { repo } (<{run_url}|report>)'
+          footer: "<{repo_url}|{View Repository}> | <{workflow_url}|View Workflow>"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_URL  }}
