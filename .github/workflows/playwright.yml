@@ -29,11 +29,12 @@ jobs:
           retention-days: 30
       - name: Report Status
         if: always()
-        uses: ravsamhq/notify-slack-action@v1
+        uses: ravsamhq/notify-slack-action@v2
         with:
           status: ${{ job.status  }}
+          repo: ${{ github.repository  }}
           notify_when: 'failure'
-          notification_title: '{workflow} has {status_message}'
-          message_format: 'Test {status_message} in BAM-karaokebox/website-backend-tests: <{run_url}|check report>'
+          notification_title: '{status}: {workflow}'
+          message_format: '{emoji} *{status_message}* in { repo } (<{run_url}|report>)'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.WEBHOOK_URL  }}
