@@ -1,10 +1,8 @@
-name: BAM Website Backend Tests
+name: BAM Backoffice Tests
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
-    - cron: '0 10 * * *'
-    - cron: '0 14 * * *'
 jobs:
   test:
     timeout-minutes: 120
