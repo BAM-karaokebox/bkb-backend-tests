@@ -50,6 +50,11 @@ const VENUES: Venue[] = [
     id: 8,
     floorPrice: 4.5,
   },
+  {
+    name: 'Luchana',
+    id: 10,
+    floorPrice: 4,
+  },
 ];
 
 const getData = async (page: Page, value: number): Promise<string> =>
