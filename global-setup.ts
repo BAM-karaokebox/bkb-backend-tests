@@ -6,7 +6,10 @@ function globalSetup(config: FullConfig) {
   if (!fs.existsSync('./PriceCSV/')) {
     fs.mkdirSync('./PriceCSV/');
   }
-  fs.writeFileSync(`./PriceCSV/backoffice-prices.csv`, '');
+  fs.writeFileSync(
+    `./PriceCSV/backoffice-prices.csv`,
+    'VENUE,ROOM,DATE,SLOT,PRICE_PER_PERSON,EXPECTED_PRICE_PER_PERSON,TOTAL_PRICE\n'
+  );
 }
 
 export default globalSetup;
