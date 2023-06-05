@@ -27,6 +27,12 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: backoffice-prices.csv
+          path: PriceCSV/backoffice-prices.csv
+          retention-days: 30
       - name: Report Status
         if: always()
         uses: ravsamhq/notify-slack-action@v2
