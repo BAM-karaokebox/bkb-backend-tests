@@ -1,5 +1,6 @@
 import { test, Page } from '@playwright/test';
 import dotenv from 'dotenv';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -9,7 +10,12 @@ const BASE_URL =
 interface Venue {
   name: string;
   id: number;
-  floorPrice: Float;
+  floorPrice: number;
+}
+
+interface PriceErrorRecord {
+  csv: string;
+  message: string;
 }
 
 const START_DATE = new Date();
@@ -50,9 +56,14 @@ const VENUES: Venue[] = [
     id: 8,
     floorPrice: 4.5,
   },
+  {
+    name: 'Luchana',
+    id: 10,
+    floorPrice: 4,
+  },
 ];
 
-const getData = async (page: Page, value: number): Promise<string> =>
+const getData = async (page: Page, value: number): Promise<string[]> =>
   await page.evaluate(
     (data: number = value) =>
       Array.from(document.querySelectorAll('div.slot.available')).map((slot) =>
@@ -61,21 +72,23 @@ const getData = async (page: Page, value: number): Promise<string> =>
     value
   );
 
-const checkPrice = async (page: Page, venue: Venue): Promise<string[]> => {
+const checkPrice = async (page: Page, venue: Venue): Promise<PriceErrorRecord[]> => {
   // Create a list compose of the 'name' of room and date of each available slot
-  const roomSlots = await page.evaluate(() => {
+  const date: string = await page.evaluate(() => {
     /*
      * Extracts date from as yyyy/mm/dd string from a dd.?mm.?yyyy string
      * (e.g. '12/03/2022' -> '2022/03/12')
      */
     const extractDate = (date: string): string =>
       date.substring(6, 10) + '/' + date.substring(0, 2) + '/' + date.substring(3, 5);
-    const rooms = [];
-    const roomNumber = document.querySelectorAll('.screen').length;
-    const date: string = extractDate(
+    return extractDate(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       document.querySelectorAll('div.slot input')[0].dataset.bookingDate as string
     );
+  });
+  const rooms: string[] = await page.evaluate(() => {
+    const rooms = [];
+    const roomNumber = document.querySelectorAll('.screen').length;
     const capacities = document.querySelectorAll('div.capacity');
     const places = document.querySelectorAll('div.places');
     for (let j = 0; j < roomNumber; j++) {
@@ -83,7 +96,7 @@ const checkPrice = async (page: Page, venue: Venue): Promise<string[]> => {
       const numberSlot = places[j].querySelectorAll('div.available').length;
       if (numberSlot !== 0) {
         for (let i = 0; i < numberSlot; i++) {
-          rooms.push(`${roomName} (${date})`);
+          rooms.push(`${roomName}`);
         }
       }
     }
@@ -124,23 +137,24 @@ const checkPrice = async (page: Page, venue: Venue): Promise<string[]> => {
   const roomPricesPerPerson = await getData(page, 4);
 
   // Verify the price by person for all matching sessions and create a list of errors
-  const errors: string[] = [];
+  const errors: PriceErrorRecord[] = [];
   for (let i = 0; i < roomPricesPerPerson.length; i++) {
-    const pricePerPerson: string = parseInt(roomPricesPerPerson[i], 10) as string;
-    const sessionTime: Float = parseFloat(sessions[i][0]);
-    const expectedPricePerPerson: string = (venue.floorPrice * sessionTime) as string;
+    const pricePerPerson: string = parseInt(roomPricesPerPerson[i], 10) as unknown as string;
+    const sessionTime: number = parseFloat(sessions[i][0]);
+    const expectedPricePerPerson: string = (venue.floorPrice * sessionTime) as unknown as string;
 
     if (pricePerPerson < expectedPricePerPerson) {
-      errors.push(
-        `${venue.name} - ${roomSlots[i]} [${timeSlots[i]}] => got: ${pricePerPerson}€ per person / expected: > ${expectedPricePerPerson} per person (total: ${roomPrices[i]})`
-      );
+      errors.push({
+        csv: `${venue.name},${rooms[i]},${date},${timeSlots[i]},${pricePerPerson},${expectedPricePerPerson},${roomPrices[i]}`,
+        message: `${venue.name} - ${rooms[i]} (${date}) [${timeSlots[i]}] => got: ${pricePerPerson}€ per person / expected: > ${expectedPricePerPerson} per person (total: ${roomPrices[i]})`,
+      });
     }
   }
   return errors;
 };
 
-const checkPricesForVenue = async (page: Page, venue: Venue, date: Date) => {
-  const errors: string[] = [];
+const checkPricesForVenue = async (page: Page, venue: Venue, date: Date): Promise<PriceErrorRecord[]> => {
+  const errors: PriceErrorRecord[] = [];
 
   // select the desired venue
   await page.selectOption('#calendar_place', venue.id.toString(10));
@@ -149,7 +163,7 @@ const checkPricesForVenue = async (page: Page, venue: Venue, date: Date) => {
   // select the desired date
   await page.locator('#date').evaluate((el) => el.removeAttribute('readonly'));
   await page.fill('#date', `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`);
-  await page.keyboard.press('Enter'); 
+  await page.keyboard.press('Enter');
 
   // wait for calendar view refresh
   await page.waitForSelector('.booking .calendar .screen');
@@ -163,15 +177,13 @@ const checkPricesForVenue = async (page: Page, venue: Venue, date: Date) => {
       errors.push(...(await checkPrice(page, venue)));
       await page.click('.btn-next-room');
       await page.waitForSelector('.booking .calendar .screen');
-      await checkPrice(page, venue)
+      await checkPrice(page, venue);
     }
   }
-  if (errors.length !== 0) {
-    throw new Error('\n' + errors.join('\n'));
-  }
+  return errors;
 };
 
-const getFutureDate = (givenDate: Date, increment: Int): Date =>
+const getFutureDate = (givenDate: Date, increment: number): Date =>
   new Date(givenDate.getTime() + increment * 24 * 60 * 60 * 1000);
 
 /*
@@ -190,18 +202,28 @@ const dateToLocalISOShortDate = (date: Date): string => {
   return localDate.toISOString().substring(0, 10);
 };
 
-[...Array(DAYS).keys()].forEach((day) => {
-  const testDay: Date = getFutureDate(START_DATE, day);
-
-  VENUES.forEach((venue) => {
-    test(`${dateToLocalISOShortDate(testDay)} - ${venue.name}`, async ({ page }) =>
-      checkPricesForVenue(page, venue, testDay));
+test.describe('Backoffice Price Checks', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(BASE_URL);
+    await page.type('input[name=_username]', process.env.AUTH_USER_BACK || '');
+    await page.type('input[name=_password]', process.env.AUTH_PASS_BACK || '');
+    await page.keyboard.press('Enter');
   });
-});
 
-test.beforeEach(async ({ page }) => {
-  await page.goto(BASE_URL);
-  await page.type('input[name=_username]', process.env.AUTH_USER_BACK);
-  await page.type('input[name=_password]', process.env.AUTH_PASS_BACK);
-  await page.keyboard.press('Enter');
+  [...Array(DAYS).keys()].forEach((day) => {
+    const testDay: Date = getFutureDate(START_DATE, day);
+
+    VENUES.forEach((venue) => {
+      test(`${dateToLocalISOShortDate(testDay)} - ${venue.name}`, async ({ page }) => {
+        const errors = await checkPricesForVenue(page, venue, testDay);
+        const invalidPriceRows: string[] = [];
+
+        if (errors.length !== 0) {
+          invalidPriceRows.push(...errors.map((e) => e.csv));
+          fs.appendFileSync(`./PriceCSV/backoffice-prices.csv`, invalidPriceRows.join('\n') + '\n');
+          throw new Error(`\n${errors.map((e) => e.message).join('\n')}'\n`);
+        }
+      });
+    });
+  });
 });

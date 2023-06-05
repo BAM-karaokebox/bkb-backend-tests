@@ -23,11 +23,12 @@ const config: PlaywrightTestConfig = {
    * We allow one retry to make the tests less prone to time-out issues,
    * but no more (to avoid aggravating ongoing performance crunches).
    */
-  retries: 1,
+  retries: 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. */
   reporter: 'html',
+  globalSetup: require.resolve('./global-setup'),
   /* Shared settings for all the projects below. */
   use: {
     /* Maximum time each action such as `click()` can take. */
