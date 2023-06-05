@@ -96,7 +96,7 @@ const checkPrice = async (page: Page, venue: Venue): Promise<PriceErrorRecord[]>
       const numberSlot = places[j].querySelectorAll('div.available').length;
       if (numberSlot !== 0) {
         for (let i = 0; i < numberSlot; i++) {
-          rooms.push(`${roomName} (${date})`);
+          rooms.push(`${roomName}`);
         }
       }
     }
